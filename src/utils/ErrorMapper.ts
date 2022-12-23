@@ -5,11 +5,13 @@ export class ErrorMapper {
   private static _consumer?: SourceMapConsumer;
 
   public static get consumer(): SourceMapConsumer {
-    if (this._consumer == null) {
-      this._consumer = new SourceMapConsumer(require("main.js.map"));
+    if (this._consumer) {
+      return this._consumer
+    } else {
+      const c = new SourceMapConsumer(require("main.js.map"))
+      this._consumer = c;
+      return c
     }
-
-    return this._consumer;
   }
 
   // Cache previously mapped traces to improve performance
@@ -27,7 +29,7 @@ export class ErrorMapper {
   public static sourceMappedStackTrace(error: Error | string): string {
     const stack: string = error instanceof Error ? (error.stack as string) : error;
     if (Object.prototype.hasOwnProperty.call(this.cache, stack)) {
-      return this.cache[stack];
+      return this.cache[stack]!;
     }
 
     // eslint-disable-next-line no-useless-escape
@@ -38,8 +40,8 @@ export class ErrorMapper {
     while ((match = re.exec(stack))) {
       if (match[2] === "main") {
         const pos = this.consumer.originalPositionFor({
-          column: parseInt(match[4], 10),
-          line: parseInt(match[3], 10)
+          column: parseInt(match[4]!, 10),
+          line: parseInt(match[3]!, 10)
         });
 
         if (pos.line != null) {
