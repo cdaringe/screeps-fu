@@ -53,3 +53,7 @@ To visit the docs, [click here](https://screepers.gitbook.io/screeps-typescript-
 ## Contributing
 
 Issues, Pull Requests, and contribution to the docs are welcome! See our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+
+## Dev-Fu
+- https://esbuild.github.io/api/#target
+- forget build/push, just do a watcher and sync to `/mnt/c/Users/cdaringe/AppData/Local/Screeps/scripts/screeps.com`

@@ -21,10 +21,9 @@ export default {
     format: "cjs",
     sourcemap: true
   },
-
   plugins: [
     clear({ targets: ["dist"] }),
-    resolve({ rootDir: "src" }),
+    resolve({ rootDir: "src", browser: true, preferBuiltins: false }),
     commonjs(),
     typescript({tsconfig: "./tsconfig.json"}),
     screeps({config: cfg, dryRun: cfg == null})

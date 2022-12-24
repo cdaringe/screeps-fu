@@ -1,4 +1,5 @@
 import { SourceMapConsumer } from "source-map";
+import * as _ from 'lodash'
 
 export class ErrorMapper {
   // Cache consumer
@@ -71,7 +72,7 @@ export class ErrorMapper {
   }
 
   public static wrapLoop(loop: () => void): () => void {
-    return () => {
+    return function mainWithErrorHandling()  {
       try {
         loop();
       } catch (e) {
@@ -80,13 +81,13 @@ export class ErrorMapper {
             const message = `Source maps don't work in the simulator - displaying original error`;
             console.log(`<span style='color:red'>${message}<br>${_.escape(e.stack)}</span>`);
           } else {
-            console.log(`<span style='color:red'>${_.escape(this.sourceMappedStackTrace(e))}</span>`);
+            console.log(`<span style='color:red'>${_.escape(ErrorMapper.sourceMappedStackTrace(e))}</span>`);
           }
         } else {
           // can't handle it
           throw e;
         }
       }
-    };
+    }.bind(this);
   }
 }
