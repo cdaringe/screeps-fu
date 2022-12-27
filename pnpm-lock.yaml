@@ -28,6 +28,7 @@ specifiers:
   rollup-plugin-clear: ^2.0.7
   rollup-plugin-screeps: ^1.0.1
   rollup-plugin-typescript2: ^0.34.1
+  rxjs: ^7.5.6
   sinon: ^6.3.5
   sinon-chai: ^3.7.0
   source-map: ^0.6
@@ -38,6 +39,7 @@ specifiers:
 
 dependencies:
   debug: 4.3.4
+  rxjs: 7.5.6
   source-map: 0.6.1
 
 devDependencies:
@@ -2231,6 +2233,12 @@ packages:
       queue-microtask: 1.2.3
     dev: true
 
+  /rxjs/7.5.6:
+    resolution: {integrity: sha512-dnyv2/YsXhnm461G+R/Pe5bWP41Nm6LBXEYWI6eiFP4fiwx6WRI/CD0zbdVAudd9xwLEF2IDcKXLHit0FYjUzw==}
+    dependencies:
+      tslib: 2.4.1
+    dev: false
+
   /safe-regex-test/1.0.0:
     resolution: {integrity: sha512-JBUUzyOgEwXQY1NuPtvcj/qcBDbDmEvWufhlnXZIm75DEHp+afM1r1ujJpJsV/gSM4t59tpDyPi1sd6ZaPFfsA==}
     dependencies:
@@ -2486,7 +2494,6 @@ packages:
 
   /tslib/2.4.1:
     resolution: {integrity: sha512-tGyy4dAjRIEwI7BzsB0lynWgOpfqjUdq91XXAlIWD2OwKBH7oCl/GZG/HT4BOHrTlPMOASlMQ7veyTqpmRcrNA==}
-    dev: true
 
   /tsutils/3.21.0_typescript@4.9.4:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
