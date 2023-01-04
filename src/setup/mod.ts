@@ -1,37 +1,39 @@
 import { init as initStrategy, run } from "../strategy/mod";
+import * as worker from "./creep_worker";
+import * as util from "./global_utilities";
 
-export function setup () {
-    initStrategy()
-    global.lastWorkerId = 0
-    global.getNextWorkerId = function getNextWorkerId() {
-     ++global.lastWorkerId;
-     return global.lastWorkerId
-    }
-    resetMemory()
-    global.nev = (p: never) => {}
-    global.creepsByType = (cs) => cs.reduce((acc, creep) => {
-        creep.body.forEach(({type}) => {
-          const creeps: Creep[] = acc.get(type) || (() => { acc.set(type, []); return acc.get(type)! })();
-          creeps.push(creep)
-        })
-        return acc
-      }, new Map())
+export function setup() {
+  initStrategy();
+  worker.initIds();
+  resetMemory();
+  util.bind();
 }
 
-function maybeUpdateLastWorkerId(name: string) {
-  const [_,idString] = name.match(/(\d+)$/) || [];
-    if (idString) {
-      const id = parseInt(idString, 10);
-      global.lastWorkerId = Math.max(id, global.lastWorkerId)
-    }
-  }
-
 function resetMemory() {
-    // Automatically delete memory of missing creeps
-    for (const name in Memory.creeps) {
-      if (!(name in Game.creeps)) {
-        delete Memory.creeps[name];
+  const creepsPlan = {};
+  const structuresPlan = {};
+  global.plan = {
+    creeps: creepsPlan,
+    structures: structuresPlan
+  };
+  // Automatically delete memory of missing creeps. The game engine
+  // may have mutated Memory between our ticks :|
+  for (const name in Memory.creeps) {
+    if (name in Game.creeps) {
+      const creep = Memory.creeps[name];
+      const plan = creep?.plan;
+      if (plan) {
+        global.plan.creeps[name] = plan;
+        throw new Error(`^^ plan currently may be in a weird format. do we need to deser?`);
       }
-      maybeUpdateLastWorkerId(name)
+    } else {
+      delete Memory.creeps[name];
     }
+    worker.maybeUpdateLastId(name);
   }
+}
+
+export function teardown() {
+  // @todo
+  throw new Error(`add custom memory serialization. see unused PlanIO::toJson`);
+}

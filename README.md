@@ -2,6 +2,17 @@
 
 A poorly performing screeps bot.
 
+## Design
+
+```mermaid
+flowchart TD;
+    _((start))-->GAME_STATE;
+    GAME_STATE-->OBSERVABLE_STATE;
+    OBSERVABLE_STATE-- combineLatest --->ACTIONS;
+    ACTIONS-->COMMANDS;
+    COMMANDS-- flush_commands -->__((end))
+```
+
 ## Contributing
 
 [.github/contributing.md](./.github/contributing.md)
