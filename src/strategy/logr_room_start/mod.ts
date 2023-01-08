@@ -1,82 +1,100 @@
-import { find } from "lodash";
+import { combineLatest, Observable } from "rxjs";
 import { partitionByRatio } from "utils/collection";
+import { difference } from "set-fns";
+import * as ostate from "../../observable-state/mod";
+import * as plan from "../../plan/mod";
+import { PlanMap } from "plan/plan-map";
 
-const getNextWorker = (spawn: StructureSpawn, room: Room) => {
-  // @todo insert something interesting here, like... needed energy vs current energy rate ... vs needed defense level
-  const roomCreepsByType = global.creepsByType(room.find(FIND_MY_CREEPS));
-  // @todo this should be _assigned_ to this room, not actually PRESENT in this room
-  const workers = roomCreepsByType.get("work") || [];
-  // @todo strategy should compute or specify workers
-  const minWorkers = 4;
-  // @todo filter by spawns of this tyyype
-  const activeSpawns = room.find(FIND_STRUCTURES).filter(s => s.structureType === STRUCTURE_SPAWN && s.spawning);
-  let numWorkersToBuild = minWorkers - activeSpawns.length - workers.length;
-  console.log(JSON.stringify({ workers: workers.length, minWorkers, numWorkersToBuild }));
-  if (numWorkersToBuild <= 0 || spawn.spawning) {
-    //
-  } else {
-    const spawnR = spawn.spawnCreep(["move", "work", "carry"], `w_${global.getNextWorkerId()}`);
-    switch (spawnR) {
-      case OK:
-        console.log(`${spawn.name} OK`);
-        break;
-      case ERR_NOT_OWNER:
-        console.log(`${spawn.name} ERR_NOT_OWNER`);
-        break;
-      case ERR_NO_PATH:
-        console.log(`${spawn.name} ERR_NO_PATH`);
-        break;
-      case ERR_BUSY:
-        console.log(`${spawn.name} ERR_BUSY`);
-        break;
-      case ERR_NAME_EXISTS:
-        console.log(`${spawn.name} ERR_NAME_EXISTS`);
-        break;
-      case ERR_NOT_FOUND:
-        console.log(`${spawn.name} ERR_NOT_FOUND`);
-        break;
-      case ERR_NOT_ENOUGH_RESOURCES:
-        console.log(`${spawn.name} ERR_NOT_ENOUGH_RESOURCES`);
-        break;
-      case ERR_NOT_ENOUGH_ENERGY:
-        console.log(`${spawn.name} ERR_NOT_ENOUGH_ENERGY`);
-        break;
-      case ERR_INVALID_TARGET:
-        console.log(`${spawn.name} ERR_INVALID_TARGET`);
-        break;
-      case ERR_FULL:
-        console.log(`${spawn.name} ERR_FULL`);
-        break;
-      case ERR_NOT_IN_RANGE:
-        console.log(`${spawn.name} ERR_NOT_IN_RANGE`);
-        break;
-      case ERR_INVALID_ARGS:
-        console.log(`${spawn.name} ERR_INVALID_ARGS`);
-        break;
-      case ERR_TIRED:
-        console.log(`${spawn.name} ERR_TIRED`);
-        break;
-      case ERR_NO_BODYPART:
-        console.log(`${spawn.name} ERR_NO_BODYPART`);
-        break;
-      case ERR_NOT_ENOUGH_EXTENSIONS:
-        console.log(`${spawn.name} ERR_NOT_ENOUGH_EXTENSIONS`);
-        break;
-      case ERR_RCL_NOT_ENOUGH:
-        console.log(`${spawn.name} ERR_RCL_NOT_ENOUGH`);
-        break;
-      case ERR_GCL_NOT_ENOUGH:
-        console.log(`${spawn.name} ERR_GCL_NOT_ENOUGH`);
-        break;
+declare global {
+  namespace NodeJS {
+    interface Global {
+      state$: {
+        lastCreeps$: Observable<ostate.CreepEvent[]>;
+        lastCreep$ByName: Dictionary<ostate.OCreep>;
+      };
     }
+  }
+}
+
+const ENERGY_AVAILABILITY_SCALAR = 3;
+const MAX_ROOM_WORKERS = 50;
+
+const workerTraitsCurve = _.times(6).map((_, i) => Math.min(30, Math.max(2, Math.pow(2, i) + 2)));
+
+const getHarvesterParts = (numParts: number): BodyPartConstant[] => {
+  if (numParts < 3) throw new Error(`must have >= 3 parts`);
+  const movePer = Math.max(1 / 30, (18 - numParts) / 30);
+  const workCarryPer = (1 - movePer) / 2;
+  return (
+    [
+      { per: workCarryPer, part: CARRY },
+      { per: workCarryPer, part: WORK },
+      { per: movePer, part: MOVE }
+    ]
+      /**
+       * order ascending to ensure small ratios get at least one
+       */
+      .sort((a, b) => (a.per > b.per ? 1 : -1))
+      .reduce<{ parts: BodyPartConstant[]; remPercent: number }>(
+        (acc, it) => {
+          const { parts: accParts, remPercent } = acc;
+          const { per, part } = it;
+          const actualPer = per < remPercent ? per : remPercent;
+          const nParts = Math.min(1, Math.floor(actualPer * numParts));
+          const itParts = _.times(nParts).map(_ => part);
+          return {
+            parts: [...accParts, ...itParts],
+            remPercent: remPercent - nParts / numParts
+          };
+        },
+        { parts: [], remPercent: 1 }
+      ).parts
+  );
+};
+
+const planNextHarvesters = (mySpawns: StructureSpawn[], room: Room) => {
+  const mySpawnable = mySpawns.filter(s => !s.isActive() && s.store[RESOURCE_ENERGY] > 0);
+  const spawn = mySpawnable[0];
+  if (!spawn) {
+    return console.warn(`no spawn available`);
+  }
+  const availableEnergy = room.unharvestedEnergy();
+  if (availableEnergy <= 0) {
+    return console.warn(`out of energy`);
+  }
+  const creepsByType = global.creepsByType(room.find(FIND_MY_CREEPS));
+  const workers = (creepsByType.get("work") || []).sort((a, b) => (a.body.length > b.body.length ? 1 : -1));
+  // @todo insert something interesting here, like... needed energy vs current energy rate ... vs needed defense level
+  // @todo this should be _assigned_ to this room, not actually PRESENT in this room
+  // @todo strategy should compute or specify workers
+  // 100 energy * 0.5 energy/tick * 3 scalar = 150
+  const targetNumWorkers = Math.min(
+    mySpawnable.length,
+    MAX_ROOM_WORKERS,
+    Math.max(1, Math.floor((availableEnergy / 1_000) * room.getRecentEnergyRate() * ENERGY_AVAILABILITY_SCALAR))
+  );
+  let numWorkersToBuild = targetNumWorkers - mySpawnable.length - workers.length;
+  if (numWorkersToBuild <= 0) {
+    console.log(
+      JSON.stringify({ workers: workers.length, mySpawnable: mySpawnable.length, targetNumWorkers, numWorkersToBuild })
+    );
+  } else {
+    _.times(numWorkersToBuild)
+      .reduce((workersParts, _) => {
+        const workerPartCounts = workers.map(w => w.body.length).concat(workersParts.map(wp => wp.length));
+        const numParts = [...difference(workerPartCounts, workerTraitsCurve)][0] || MAX_CREEP_SIZE;
+        const parts = getHarvesterParts(numParts);
+        return [...workersParts, parts];
+      }, [] as BodyPartConstant[][])
+      .forEach(parts => room.plan.add(spawn.id, spawn, "structure_spawn", { kind: "spawn", data: { parts } }));
   }
 };
 
-const assignRoomWorkerTasks = (room: Room) => {
+const planCurrentWorkerTasks = (room: Room) => {
   // @todo insert something interesting here, like... needed energy vs current energy rate ... vs needed defense level
-  const roomCreepsByType = global.creepsByType(room.find(FIND_MY_CREEPS, { filter: c => !c.spawning }));
+  const creepsByType = global.creepsByType(room.find(FIND_MY_CREEPS, { filter: c => !c.spawning }));
   // @todo this should be _assigned_ to this room, not actually PRESENT in this room
-  const workers = roomCreepsByType.get("work") || [];
+  const workers = creepsByType.get("work") || [];
   const orderedActivityRatios = {
     harvest: 0.5,
     upgrade: 0.25,
@@ -259,10 +277,56 @@ const assignRoomWorkerTasks = (room: Room) => {
   });
 };
 
+export const onSetup = () => {
+  global.state$ = {
+    get lastCreeps$() {
+      const creeps = Object.values(global.state$.lastCreep$ByName).map(v => v.observable);
+      return combineLatest(creeps);
+    },
+    lastCreep$ByName: {}
+  };
+};
+
+export const onSetupCreep = (creep: Creep) => {
+  const cbn = global.state$.lastCreep$ByName;
+  cbn[creep.name] = ostate.creep(creep.name, creep);
+};
+
+const resolvePlan = (room: Room) => {
+  // @todo naive plan implemented
+  room.plan.forEach((entityPlan, gameObjectId) => {
+    const { kind, entity, data } = entityPlan;
+    switch (kind) {
+      case "creep": {
+        return plan.creep.process(entity, data);
+      }
+      case "structure_spawn": {
+        return plan.structureSpawn.process(entity, data);
+      }
+      default:
+        return global.nev(kind, `unhandled plan kind: ${kind}`);
+    }
+  });
+};
+
+export const runRoom = ({ room, name }: { room: Room; name: string }) => {
+  // initialize room data
+  room.updateEnergyRateHistory();
+
+  // plan
+  const mySpawns = room.find(FIND_MY_SPAWNS);
+  if (mySpawns.length) {
+    planNextHarvesters(mySpawns, room);
+  }
+  planCurrentWorkerTasks(room);
+
+  // resolve
+  resolvePlan(room);
+};
+
 export const run = () => {
-  for (const [_roomName, room] of Object.entries(Game.rooms)) {
-    const [spawn] = room.find(FIND_MY_SPAWNS);
-    if (spawn) getNextWorker(spawn, room);
-    assignRoomWorkerTasks(room);
+  for (const [name, room] of Object.entries(Game.rooms)) {
+    room.plan = new PlanMap();
+    runRoom({ name, room });
   }
 };

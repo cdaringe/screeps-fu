@@ -1,5 +1,7 @@
 export function bind() {
-  global.nev = (_: never) => {};
+  global.nev = (x: never, msg) => {
+    throw new Error(msg ? msg : `unexpected never: ${x}`);
+  };
   global.creepsByType = cs =>
     cs.reduce((acc, creep) => {
       creep.body.forEach(({ type }) => {

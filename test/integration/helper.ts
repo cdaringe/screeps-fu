@@ -1,5 +1,5 @@
 import { readFileSync } from "fs";
-import { ScreepsServer, stdHooks } from "screeps-server-mockup";
+import { ScreepsServer, stdHooks } from "cdaringe-screeps-server-mockup";
 const DIST_MAIN_JS = "dist/main.js";
 
 /*

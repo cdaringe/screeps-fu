@@ -1,5 +1,6 @@
+import { Plan } from "plan/mod";
 import { Strategy } from "strategy/types";
-import { CreepAction, Plan } from "./plan/mod";
+export * from "./prototypes/mod";
 declare global {
   type Dictionary<T> = Record<string, T>;
   /*
@@ -17,12 +18,11 @@ declare global {
     strategy: Strategy<any>;
   }
 
-  // interface RoomMemory {
-  //   spawningNames: Dictionary<boolean>
-  // }
+  interface RoomMemory {
+    energyRateHistory: number[];
+  }
 
   interface CreepMemory {
-    plan?: CreepAction;
     role: string;
     room: string;
     working: boolean;
@@ -35,8 +35,7 @@ declare global {
       creepsByType: (creeps: Creep[]) => Map<BodyPartConstant, Creep[]>;
       lastWorkerId: number;
       getNextWorkerId: () => number;
-      nev: (n: never) => void;
-      plan: Plan;
+      nev: (n: never, msg?: string) => void;
     }
   }
 }
