@@ -9,10 +9,12 @@ test("BitState", t => {
   t.is(JSON.stringify(bs), "[1]");
   t.is(bs.length, 0);
   bs = BitState.of(2); // 2 => [false]
-  t.deepEqual(bs.toArray(), [false]) // 1 => []
+  t.deepEqual(bs.toArray(), [false]) // 2 => [false]
   t.is(bs.length, 1);
   t.is(JSON.stringify(bs), "[2]");
   t.deepEqual(bs.toArray(), [false]);
+  bs = BitState.of(3);
+  t.deepEqual(bs.toArray(), [true]) // 3 => [true]
   const lotsDataTrue = [...new Array(31)].map(_ => true);
   bs = BitState.ofArray(lotsDataTrue);
   t.deepEqual(bs.toArray(), lotsDataTrue)
