@@ -3,24 +3,17 @@
   "version": "0.0.0",
   "description": "",
   "main": "index.js",
-  "//": "If you add or change the names of destinations in screeps.json, make sure you update these scripts to reflect the changes",
   "scripts": {
-    "b": "esbuild src/main.ts --bundle --sourcemap --external:main.js.map --target=chrome108 --outfile=/mnt/c/Users/cdaringe/AppData/Local/Screeps/scripts/screeps.com/main/main.js --watch",
-    "esbuild": "esbuild src/main.ts --bundle --sourcemap --external:main.js.map --minify --outfile=build/main.js",
+    "esbuild:wsl": "esbuild src/main.ts --bundle --sourcemap --external:main.js.map --target=chrome108 --outfile=/mnt/c/Users/cdaringe/AppData/Local/Screeps/scripts/screeps.com/main/main.js --watch",
+    "esbuild": "esbuild src/main.ts --bundle --sourcemap --external:main.js.map --outfile=build/main.js",
+    "esbuild:watch": "run-s esbuild --watch",
+    "typecheck:watch": "tsc --noEmit --watch",
     "lint": "eslint \"src/**/*.ts\"",
     "build": "rollup -c",
     "format": "prettier --write '{src,test}/**/*.ts'",
-    "push-main": "rollup -c --environment DEST:main",
-    "push-pserver": "rollup -c --environment DEST:pserver",
-    "push-season": "rollup -c --environment DEST:season",
-    "push-sim": "rollup -c --environment DEST:sim",
-    "test": "npm run test-unit",
-    "test-unit": "mocha test/unit/**/*.ts",
-    "test-integration": "echo 'See docs/in-depth/testing.md for instructions on enabling integration tests'",
-    "watch-main": "rollup -cw --environment DEST:main",
-    "watch-pserver": "rollup -cw --environment DEST:pserver",
-    "watch-season": "rollup -cw --environment DEST:season",
-    "watch-sim": "rollup -cw --environment DEST:sim"
+    "test_": "npm run test-unit",
+    "test": "ava",
+    "test-integration": "echo 'See docs/in-depth/testing.md for instructions on enabling integration tests'"
   },
   "repository": {
     "type": "git",
@@ -38,6 +31,8 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
+    "@screeps/driver": "5.2.1",
+    "@screeps/engine": "4.2.14",
     "@types/chai": "^4.3.4",
     "@types/lodash": "3.10.2",
     "@types/mocha": "^5.2.7",
@@ -50,15 +45,12 @@
     "@typescript-eslint/typescript-estree": "^4.33.0",
     "ava": "5.1.0",
     "cdaringe-screeps-server-mockup": "latest",
-    "chai": "^4.3.7",
     "esbuild": "0.16.10",
     "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^2.7.1",
-    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^3.4.1",
     "lodash": "^3.10.1",
-    "mocha": "^5.2.0",
+    "npm-run-all": "4.1.5",
     "prettier": "^2.8.1",
     "prettier-plugin-organize-imports": "3.2.1",
     "rollup": "^2.79.1",
@@ -81,5 +73,19 @@
     "overrides": {
       "isolated-vm": "^4"
     }
+  },
+  "ava": {
+    "files": [
+      "./test/unit/**/*.test.ts"
+    ],
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register/transpile-only",
+      "./test/env.ts",
+      "./src/prototypes/mod.ts"
+    ],
+    "workerThreads": false
   }
 }
