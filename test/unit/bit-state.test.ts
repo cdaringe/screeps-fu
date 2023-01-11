@@ -4,20 +4,27 @@ import { BitState30 } from "../../src/utils/bit-state-30";
 
 test("BitState", t => {
   t.throws(() => BitState.of(0));
+  let bs = new BitState();
+  t.is(bs.length, 0)
+  t.is(JSON.stringify(bs), "[1]");
+  t.deepEqual(bs.toArray(), [])
 
-  let bs = BitState.of(1);
+  bs = BitState.of(1);
   t.is(bs.length, 0);
   t.is(JSON.stringify(bs), "[1]");
+  t.deepEqual(BitState.ofArray([]).toJSON(), [1])
   t.deepEqual(bs.toArray(), []) // 1 => []
 
   bs = BitState.of(2);
   t.is(bs.length, 1);
   t.is(JSON.stringify(bs), "[2]");
+  t.deepEqual(BitState.ofArray([false]).toJSON(), [2])
   t.deepEqual(bs.toArray(), [false]) // 2 => [false]
 
   bs = BitState.of(3);
   t.is(bs.length, 1);
   t.is(JSON.stringify(bs), "[3]");
+  t.deepEqual(BitState.ofArray([true]).toJSON(), [3])
   t.deepEqual(bs.toArray(), [true]) // 3 => [true]
 
   const lotsDataTrue = [...new Array(31)].map(_ => true);
