@@ -3,11 +3,12 @@ import test from "ava";
 import { BitState30 } from "../../src/utils/bit-state-30";
 
 test("BitState", t => {
-  t.throws(() => BitState.of(0));
   let bs = new BitState();
   t.is(bs.length, 0)
   t.is(JSON.stringify(bs), "[1]");
   t.deepEqual(bs.toArray(), [])
+
+  t.throws(() => BitState.of(0));
 
   bs = BitState.of(1);
   t.is(bs.length, 0);
