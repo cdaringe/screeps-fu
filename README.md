@@ -57,3 +57,12 @@ Issues, Pull Requests, and contribution to the docs are welcome! See our [Contri
 ## Dev-Fu
 - https://esbuild.github.io/api/#target
 - forget build/push, just do a watcher and sync to `/mnt/c/Users/cdaringe/AppData/Local/Screeps/scripts/screeps.com`
+
+
+## Reminders
+
+- we need to spawn creeps, but spawning costs energy, which is a wee bit sparse
+- you need to snap each screep into action on each tick. use `creep.memory` to do so
+- a creep needs to be upgrading the controller using energy
+- extensions pimp creeps
+-

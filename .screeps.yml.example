@@ -1,0 +1,36 @@
+servers:
+  main:
+    host: screeps.com
+    secure: true
+    token: '35a345b9-bc6b-4855-8566-66b341913f9b'
+  ptr:
+    host: screeps.com
+    secure: true
+    token: '17f70980-eceb-46ba-a4c3-9677a1570f06'
+    ptr: true
+  screepsplus:
+    host: screepspl.us
+    secure: true
+    port: 443
+    username: bob
+    password: password123
+  myserv:
+    host: 127.0.0.1
+    secure: false
+    username: bob
+    password: password123
+configs:
+  screepsconsole:
+    maxHistory: 20000
+    maxScroll: 20000
+  screepsplus-agent:
+    token: screepsPlusToken
+    checkForUpdates: false
+  nuke-announcer:
+    slack:
+      webhook: https://....
+      channel: #thewarpath
+  nuke-announcer-sp:
+    slack:
+      webhook: https://....
+      channel: #screepsplus-warpath

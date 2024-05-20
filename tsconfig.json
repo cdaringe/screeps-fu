@@ -1,19 +1,15 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    "lib": [
-      "es2020"
-    ],
-    "target": "es2020",
-    "moduleResolution": "Node",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ESNext",
     "outDir": "dist",
     "baseUrl": "src/",
     "sourceMap": true,
     "strict": true,
-    "allowSyntheticDefaultImports": true,
-    "noUncheckedIndexedAccess": true
+    "allowSyntheticDefaultImports": false,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": false
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules", "test"]
 }

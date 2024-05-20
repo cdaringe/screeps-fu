@@ -1,5 +1,7 @@
 import { SourceMapConsumer } from "source-map";
-import * as _ from 'lodash'
+import { lodash } from "./3p";
+
+const { escape } = lodash;
 
 export class ErrorMapper {
   // Cache consumer
@@ -7,11 +9,12 @@ export class ErrorMapper {
 
   public static get consumer(): SourceMapConsumer {
     if (this._consumer) {
-      return this._consumer
+      return this._consumer;
     } else {
-      const c = new SourceMapConsumer(require("main.js.map"))
-      this._consumer = c;
-      return c
+      // const c = new SourceMapConsumer(require("main.js.map"))
+      // this._consumer = c;
+      // return c
+      throw new Error("SourceMapConsumer not initialized");
     }
   }
 
@@ -28,7 +31,8 @@ export class ErrorMapper {
    * @returns {string} The source-mapped stack trace
    */
   public static sourceMappedStackTrace(error: Error | string): string {
-    const stack: string = error instanceof Error ? (error.stack as string) : error;
+    const stack: string =
+      error instanceof Error ? (error.stack as string) : error;
     if (Object.prototype.hasOwnProperty.call(this.cache, stack)) {
       return this.cache[stack]!;
     }
@@ -42,7 +46,7 @@ export class ErrorMapper {
       if (match[2] === "main") {
         const pos = this.consumer.originalPositionFor({
           column: parseInt(match[4]!, 10),
-          line: parseInt(match[3]!, 10)
+          line: parseInt(match[3]!, 10),
         });
 
         if (pos.line != null) {
@@ -72,16 +76,22 @@ export class ErrorMapper {
   }
 
   public static wrapLoop(loop: () => void): () => void {
-    return function mainWithErrorHandling()  {
+    return function mainWithErrorHandling() {
       try {
         loop();
       } catch (e) {
         if (e instanceof Error) {
           if ("sim" in Game.rooms) {
             const message = `Source maps don't work in the simulator - displaying original error`;
-            console.log(`<span style='color:red'>${message}<br>${_.escape(e.stack)}</span>`);
+            console.log(
+              `<span style='color:red'>${message}<br>${escape(e.stack)}</span>`,
+            );
           } else {
-            console.log(`<span style='color:red'>${_.escape(ErrorMapper.sourceMappedStackTrace(e))}</span>`);
+            console.log(
+              `<span style='color:red'>${escape(
+                ErrorMapper.sourceMappedStackTrace(e),
+              )}</span>`,
+            );
           }
         } else {
           // can't handle it
