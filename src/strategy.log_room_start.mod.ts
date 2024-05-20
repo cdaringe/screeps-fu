@@ -1,5 +1,16 @@
 import { partitionByRatio } from "./utils.collection";
 
+export const run = () => {
+  for (const roomName in Game.rooms) {
+    const room = Game.rooms[roomName]!;
+    const [spawn] = room.find(FIND_MY_SPAWNS);
+    if (spawn) {
+      getNextWorker(spawn, room);
+    }
+    assignRoomWorkerTasks(room);
+  }
+};
+
 const getNextWorker = (spawn: StructureSpawn, room: Room) => {
   // @todo insert something interesting here, like... needed energy vs current energy rate ... vs needed defense level
   const roomCreepsByType = global.creepsByType(room.find(FIND_MY_CREEPS));
@@ -10,7 +21,7 @@ const getNextWorker = (spawn: StructureSpawn, room: Room) => {
   // @todo filter by spawns of this tyyype
   const activeSpawns = room
     .find(FIND_STRUCTURES)
-    .filter((s) => s.structureType === STRUCTURE_SPAWN && s.spawning);
+    .filter((s) => s.structureType === "spawn" && s.spawning);
   let numWorkersToBuild = minWorkers - activeSpawns.length - workers.length;
   console.log(
     JSON.stringify({ workers: workers.length, minWorkers, numWorkersToBuild }),
@@ -267,12 +278,4 @@ const assignRoomWorkerTasks = (room: Room) => {
       }
     }
   });
-};
-
-export const run = () => {
-  for (const [_roomName, room] of Object.entries(Game.rooms)) {
-    const [spawn] = room.find(FIND_MY_SPAWNS);
-    if (spawn) getNextWorker(spawn, room);
-    assignRoomWorkerTasks(room);
-  }
 };

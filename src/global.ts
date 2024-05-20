@@ -28,15 +28,20 @@ declare global {
     destId?: string;
   }
 
-  // Syntax for adding proprties to `global` (ex "global.log")
-  namespace NodeJS {
-    interface Global {
-      creepsByType: (creeps: Creep[]) => Map<BodyPartConstant, Creep[]>;
-      lastWorkerId: number;
-      getNextWorkerId: () => number;
-      nev: (n: never) => void;
-    }
-  }
+  var creepsByType: (creeps: Creep[]) => Map<BodyPartConstant, Creep[]>;
+  var lastWorkerId: number;
+  var getNextWorkerId: () => number;
+  var nev: (n: never) => void;
+
+  // // Syntax for adding proprties to `global` (ex "global.log")
+  // namespace NodeJS {
+  //   interface Global {
+  //     creepsByType: (creeps: Creep[]) => Map<BodyPartConstant, Creep[]>;
+  //     lastWorkerId: number;
+  //     getNextWorkerId: () => number;
+  //     nev: (n: never) => void;
+  //   }
+  // }
 }
 
 export {};
