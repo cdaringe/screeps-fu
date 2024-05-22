@@ -24,3 +24,5 @@ export const partitionByRatio = <T, R extends Record<string, number>>(
   if (result.perSum !== 1) throw new Error(`ratios do not sum to 1`);
   return result.acc;
 };
+
+export const sum = (arr: number[]) => arr.reduce((acc, n) => acc + n, 0);

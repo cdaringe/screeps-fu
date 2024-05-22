@@ -21,27 +21,43 @@ declare global {
   //   spawningNames: Dictionary<boolean>
   // }
 
-  interface CreepMemory {
-    role: string;
+  interface CreepMemoryCommon {
     room: string;
     working: boolean;
     destId?: string;
+    isOverallocatedRole?: boolean;
   }
 
-  var creepsByType: (creeps: Creep[]) => Map<BodyPartConstant, Creep[]>;
+  type HarvestorMemory = CreepMemoryCommon & {
+    role: "harvester";
+    target?: Structure;
+  };
+
+  type UpgraderMemory = CreepMemoryCommon & {
+    role: "upgrader";
+    target?: Structure;
+  };
+
+  type BuilderMemory = CreepMemoryCommon & {
+    role: "builder";
+    target?: Structure;
+  };
+
+  interface CreepMemory {
+    current: HarvestorMemory | UpgraderMemory | BuilderMemory;
+  }
+
+  type CreepRole = CreepMemory["current"]["role"];
+
+  type CreepsByRole = Partial<Record<CreepRole, Record<string, Creep>>>;
+
+  var creepsByRole: (creeps: Creep[]) => CreepsByRole;
   var lastWorkerId: number;
   var getNextWorkerId: () => number;
   var nev: (n: never) => void;
-
-  // // Syntax for adding proprties to `global` (ex "global.log")
-  // namespace NodeJS {
-  //   interface Global {
-  //     creepsByType: (creeps: Creep[]) => Map<BodyPartConstant, Creep[]>;
-  //     lastWorkerId: number;
-  //     getNextWorkerId: () => number;
-  //     nev: (n: never) => void;
-  //   }
-  // }
+  var STRUCTURE_MAPS: {
+    ENERGY_CONSUMING: Set<StructureConstant>;
+  };
 }
 
 export {};

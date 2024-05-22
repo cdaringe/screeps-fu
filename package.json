@@ -5,6 +5,7 @@
   "main": "index.js",
   "//": "If you add or change the names of destinations in screeps.json, make sure you update these scripts to reflect the changes",
   "scripts": {
+    "predeploy": "run-s build",
     "deploy": "screeps-api upload $(ls dist/*.js)",
     "prebuild": "rm -rf dist",
     "build": "tsc && esbuild src/3p.ts --bundle --target=chrome123 --outfile=dist/3p.js",
