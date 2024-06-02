@@ -12,8 +12,20 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "complexity": {
+        "noUselessEmptyExport": "off",
+        "noBannedTypes": "off"
+      },
       "style": {
-        "noNonNullAssertion": "off"
+        "useExportType": "off",
+        "noNonNullAssertion": "off",
+        "useImportType": "off",
+        "noUnusedTemplateLiteral": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noShadowRestrictedNames": "off",
+        "noEmptyInterface": "off"
       }
     }
   }

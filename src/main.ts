@@ -1,6 +1,6 @@
 import { setup } from "./setup.mod";
 import type {} from "./global";
-import { run } from "./strategy.log_room_start.mod";
+import { run } from "./strategy";
 
 setup();
 

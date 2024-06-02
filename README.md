@@ -17,4 +17,8 @@ cdaringe screeps ai.
 - you need to snap each screep into action on each tick. use `creep.memory` to do so
 - a creep needs to be upgrading the controller using energy
 - extensions pimp creeps
--
+
+
+## Strategies
+
+Consult the top of the strategy.*.mod.ts for strategy description.

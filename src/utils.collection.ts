@@ -1,4 +1,4 @@
-export const partitionByRatio = <T, R extends Record<string, number>>(
+export const partitionByRatio = <T, R extends Dictionary<number>>(
   ratios: R,
   arr: T[],
 ) => {
@@ -26,3 +26,5 @@ export const partitionByRatio = <T, R extends Record<string, number>>(
 };
 
 export const sum = (arr: number[]) => arr.reduce((acc, n) => acc + n, 0);
+export const randomElement = <T>(ts: T[]) =>
+  ts[Math.floor(Math.random() * ts.length)];

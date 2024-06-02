@@ -1,5 +1,6 @@
 import { Strategy } from "./strategy.types";
-import { run as logRoomStart } from "./strategy.log_room_start.mod";
+import { run as logRoomStart } from "./strategy";
+
 export const run = () => {
   if (Memory.strategy === "logarithmic_resources_room_start") {
     logRoomStart();

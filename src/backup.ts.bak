@@ -1,0 +1,80 @@
+const maybeGetNextWorker = ({
+  room,
+  state,
+}: { room: Room; state: PlanState }): PlanState => {
+  if (room.energyAvailable < COST_LAME_WORKER) {
+    return state;
+  }
+
+  const spawn = room.find(FIND_MY_SPAWNS, { filter: (s) => !s.spawning })[0];
+  if (!spawn) {
+    return state;
+  }
+
+  const percentCreepsByRole = getPercentCreepsByRole(state.collections.creeps);
+  const mostNeededRole = getMostNeededRole({
+    needed: state.targetState.roleAllocations,
+    actual: percentCreepsByRole,
+  });
+  const parts: BodyPartConstant[] = getMaxBeefedUpPartsWeCanAfford(
+    BODY_PARTS_LAME_WORKER,
+    room.energyAvailable / 2,
+  );
+
+  const spawnR = spawn.spawnCreep(parts, `w_${fu.getNextWorkerId()}`, {
+    memory: { current: { role: mostNeededRole } },
+  });
+  switch (spawnR) {
+    case OK:
+      console.log(`${spawn.name} OK`);
+      break;
+    case ERR_NOT_OWNER:
+      console.log(`${spawn.name} ERR_NOT_OWNER`);
+      break;
+    case ERR_NO_PATH:
+      console.log(`${spawn.name} ERR_NO_PATH`);
+      break;
+    case ERR_BUSY:
+      console.log(`${spawn.name} ERR_BUSY`);
+      break;
+    case ERR_NAME_EXISTS:
+      console.log(`${spawn.name} ERR_NAME_EXISTS`);
+      break;
+    case ERR_NOT_FOUND:
+      console.log(`${spawn.name} ERR_NOT_FOUND`);
+      break;
+    case ERR_NOT_ENOUGH_RESOURCES:
+      console.log(`${spawn.name} ERR_NOT_ENOUGH_RESOURCES`);
+      break;
+    case ERR_NOT_ENOUGH_ENERGY:
+      console.log(`${spawn.name} ERR_NOT_ENOUGH_ENERGY`);
+      break;
+    case ERR_INVALID_TARGET:
+      console.log(`${spawn.name} ERR_INVALID_TARGET`);
+      break;
+    case ERR_FULL:
+      console.log(`${spawn.name} ERR_FULL`);
+      break;
+    case ERR_NOT_IN_RANGE:
+      console.log(`${spawn.name} ERR_NOT_IN_RANGE`);
+      break;
+    case ERR_INVALID_ARGS:
+      console.log(`${spawn.name} ERR_INVALID_ARGS`);
+      break;
+    case ERR_TIRED:
+      console.log(`${spawn.name} ERR_TIRED`);
+      break;
+    case ERR_NO_BODYPART:
+      console.log(`${spawn.name} ERR_NO_BODYPART`);
+      break;
+    case ERR_NOT_ENOUGH_EXTENSIONS:
+      console.log(`${spawn.name} ERR_NOT_ENOUGH_EXTENSIONS`);
+      break;
+    case ERR_RCL_NOT_ENOUGH:
+      console.log(`${spawn.name} ERR_RCL_NOT_ENOUGH`);
+      break;
+    case ERR_GCL_NOT_ENOUGH:
+      console.log(`${spawn.name} ERR_GCL_NOT_ENOUGH`);
+      break;
+  }
+};
