@@ -10,7 +10,7 @@
     "prebuild": "rm -rf dist",
     "//build": "tsc && esbuild src/3p.ts --bundle --target=chrome123 --outfile=dist/3p.js",
     "///build": "esbuild src/main.ts --bundle --platform=node --sourcemap --external:main.js.map --target=node22 --outfile=build/main.js",
-    "build": "esbuild src/main.ts --bundle --target=chrome123 --outfile=build/main.js",
+    "build": "esbuild src/main.ts --bundle --target=chrome123 --tree-shaking=true --outfile=build/main.js",
     "build:watch": "run-s 'build --watch'",
     "lint": "eslint \"src/**/*.ts\"",
     "format": "biome format --write .",
