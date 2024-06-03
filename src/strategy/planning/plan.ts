@@ -9,7 +9,7 @@ import { planUpgrade } from "./upgrader";
 
 export const planActions = (state: PlanState): ProposedActionByRoleByName => {
   const creepsByRole = state.collections.creeps.byRole;
-  const nextProposedByRole: ProposedActionByRoleByName = state.collections
+  const proposedActionByRole: ProposedActionByRoleByName = state.collections
     .proposedCreeps.byRole ?? {
     harvester: {},
     upgrader: {},
@@ -26,8 +26,8 @@ export const planActions = (state: PlanState): ProposedActionByRoleByName => {
     const creepsByName = creepsByRole[roleName];
     for (const name in creepsByName) {
       const creep = creepsByName[name]!;
-      const proposedAction = nextProposedByRole[roleName][name];
-      nextProposedByRole[roleName][creep.name] =
+      const proposedAction = proposedActionByRole[roleName][name];
+      proposedActionByRole[roleName][creep.name] =
         proposedAction ??
         ((): CreepAction<any> => {
           const input: PlanRoleAction = { state, creep };
@@ -45,39 +45,7 @@ export const planActions = (state: PlanState): ProposedActionByRoleByName => {
         })();
     }
   }
-
-  // workersByType.build.forEach((c, ci) => {
-  //   c.memory.role = "build";
-  //   const sites = room.find(FIND_MY_CONSTRUCTION_SITES);
-  //   // @todo refil resources
-  //   const site = sites[ci % sites.length];
-  //   if (site) {
-  //     const buildR = c.build(site);
-  //     switch (buildR) {
-  //       case OK:
-  //         return;
-  //       case ERR_NOT_OWNER:
-  //         throw new Error("not owner");
-  //       case ERR_BUSY:
-  //         break;
-  //       case ERR_NOT_ENOUGH_RESOURCES:
-  //         console.log(`${c.id} not enough resources to build`);
-  //       case ERR_INVALID_TARGET:
-  //         console.log(`tried to build invalid`);
-  //         break;
-  //       case ERR_NOT_IN_RANGE:
-  //         c.moveTo(site.pos);
-  //         break;
-  //       case ERR_NO_BODYPART:
-  //         c.suicide();
-  //         break;
-  //       case ERR_RCL_NOT_ENOUGH:
-  //         console.log("RCL not enough");
-  //     }
-  //   }
-  // });
-
-  return nextProposedByRole;
+  return proposedActionByRole;
 };
 
 /**

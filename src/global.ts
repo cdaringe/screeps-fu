@@ -71,7 +71,7 @@ declare global {
     };
     actions: {
       creep: {
-        merge: <S>(...actions: CreepAction<S>[]) => CreepAction<S>;
+        merge: <S>(...actions: CreepAction<S>[]) => CreepActionMany<S>;
       };
     };
 

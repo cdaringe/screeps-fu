@@ -20,10 +20,12 @@ export function setup() {
                 ),
               } satisfies CreepActionMany<S>;
             },
-            {
-              state: hd.state,
-              methods: ["method" in hd ? hd.method : hd.methods],
-            } as CreepActionMany<S>,
+            "methods" in hd
+              ? hd
+              : ({
+                  state: hd.state,
+                  methods: [hd.method],
+                } as CreepActionMany<S>),
           );
         },
       },
