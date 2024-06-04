@@ -1,9 +1,18 @@
 import { init as initStrategy, run } from "./strategy";
 
+const SYMBOL_ACT = Symbol("act") as CreepActionTag;
+
 export function setup() {
   initStrategy();
 
   global.fu = {
+    act: (code, ok, notOk) => {
+      const res = code === OK ? ok() : notOk(code);
+      if (res && res !== SYMBOL_ACT) {
+        throw new Error(`act: ${String(res)}`);
+      }
+      return SYMBOL_ACT;
+    },
     actions: {
       creep: {
         merge: <S>(...actions: CreepAction<S>[]) => {
@@ -28,6 +37,19 @@ export function setup() {
                 } as CreepActionMany<S>),
           );
         },
+        retryOnceElse: (creep, once, elseFn) => {
+          // allow exactly one attempt at retrying a role assignment to the creep.
+          // use some js magic to make this property non-enumerable s.t.
+          // it never gets serialized to memory
+          if (!("retryAssignment" in creep.memory)) {
+            Object.defineProperty(creep.memory, "retryAssignment", {
+              value: true,
+              enumerable: false,
+            });
+            return once();
+          }
+          return elseFn();
+        },
       },
     },
     lastWorkerId: 0,
@@ -43,7 +65,10 @@ export function setup() {
       const byType: Partial<Record<CreepRole, Dictionary<Creep>>> = {};
       for (const i in creeps) {
         const creep = creeps[i]!;
-        const type = creep.memory.current.role!;
+        const type = (creep.memory as CreepRoleMemory).role;
+        if (!type) {
+          throw new Error(`creep ${creep.name} has no role`);
+        }
         const roleCreepsById = byType[type] ?? {};
         roleCreepsById[creep.name] = creep;
         byType[type] = roleCreepsById;
@@ -82,12 +107,12 @@ export function setup() {
       throw new Error(msg ?? "unreachable");
     },
     noop: () => {},
+    set(ref, key, next) {
+      ref[key] = next;
+    },
   };
   resetMemory();
-
 }
-
-
 
 function maybeUpdateLastWorkerId(name: string) {
   const [_, idString] = name.match(/(\d+)$/) || [];

@@ -1,21 +1,21 @@
 import { sum } from "../utils.collection";
 
-export type PlanRoleAction<RoleFields = {}> = {
+export type PlanRoleAction<RoleMemoryType, RoleFields = {}> = {
+  creep: Omit<Creep, "memory"> & { memory: RoleMemoryType };
   state: PlanState;
-  creep: Creep;
 } & RoleFields;
 
 /**
  * @example planHarvest, planUpgrade, planBuild
  */
-export type PlanRoleFn<Action = unknown> = (_: PlanRoleAction<{}>) => Action;
+export type PlanRoleFn = (_: PlanRoleAction<{}>) => CreepActionTag | undefined;
 
 /**
  * @example planHarvestMove, planHarvestXfer, etc
  */
-export type PlanRoleActionFn<Action /* eg CreepUpgradeAction */, RoleFields> = (
-  _: PlanRoleAction<RoleFields>,
-) => Action;
+export type PlanRoleActionFn<RoleMemoryType, RoleFields> = (
+  _: PlanRoleAction<RoleMemoryType, RoleFields>,
+) => CreepActionTag | undefined;
 
 export type CreepHarvestAction = CreepAction<HarvestorMemory["state"]>;
 export type CreepUpgradeAction = CreepAction<UpgraderMemory["state"]>;

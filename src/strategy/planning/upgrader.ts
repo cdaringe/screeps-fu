@@ -38,82 +38,92 @@ type UpgradePlanFields = {
         value: AnyStructure;
       };
 };
-type PlanUpgradeActionFn = PlanRoleActionFn<
-  CreepUpgradeAction,
-  UpgradePlanFields
->;
+type PlanUpgradeActionFn = PlanRoleActionFn<UpgraderMemory, UpgradePlanFields>;
 
 export const planActionByRole: Record<
   UpgraderMemory["state"],
   PlanUpgradeActionFn
 > = {
   idle: (opts) => {
-    if (opts.creep.store.energy > 0) {
+    const { creep } = opts;
+    if (creep.store.energy > 0) {
       return planActionByRole.upgrading(opts);
     }
-    if (opts.creep.store.getFreeCapacity() > 0) {
+    if (creep.store.getFreeCapacity() > 0) {
       return planActionByRole.collecting_by_container(opts);
     }
-    return {
-      state: "idle",
-      method: ["say", ["⚠️ nothing to upgrade or collect"]],
-    };
+    return fu.act(
+      creep.say("⚠️ nothing to upgrade or collect"),
+      () => fu.set(creep, "memory", { state: "idle", role: "upgrader" }),
+      (_code) => fu.set(creep, "memory", { state: "idle", role: "upgrader" }),
+    );
   },
   upgrading: (opts) => {
     const {
+      creep,
       last: { value, kind } = {},
     } = opts;
     if (kind === "energySource") {
       return planActionByRole.collecting_by_container(opts);
     }
     if (kind === "targetStructure") {
-      return {
-        state: "upgrading",
-        method: ["upgradeController", [value as StructureController]],
-      };
+      return fu.act(
+        creep.upgradeController(value as StructureController),
+        () => fu.set(creep.memory, "state", "upgrading"),
+        (code) => {
+          creep.say(`⚠️ upgrade failed ${code}`);
+          return planActionByRole.idle(opts);
+        },
+      );
     }
     return planActionByRole.idle(opts);
   },
-  collecting_by_container: (opts) =>
-    opts?.last?.kind === "energySource"
-      ? {
-          state: "collecting_by_container",
-          method: ["transfer", [opts.last?.value, RESOURCE_ENERGY]],
-        }
-      : planActionByRole.upgrading(opts),
-  moving: (opts) =>
-    opts.last?.value
-      ? opts.creep.pos.isNearTo(opts.last.value)
-        ? opts.last.kind === "energySource"
+  collecting_by_container: (opts) => {
+    const {
+      creep,
+      last: { value, kind } = {},
+    } = opts;
+    return value && kind === "energySource"
+      ? fu.act(
+          creep.withdraw(value, RESOURCE_ENERGY),
+          () => fu.set(creep.memory, "state", "collecting_by_container"),
+          (_code) => planActionByRole.idle(opts),
+        )
+      : planActionByRole.upgrading(opts);
+  },
+  moving: (opts) => {
+    const {
+      creep,
+      last: { value, kind } = {},
+    } = opts;
+    return value
+      ? creep.pos.isNearTo(value)
+        ? kind === "energySource"
           ? planActionByRole.collecting_by_container(opts)
           : planActionByRole.upgrading(opts)
-        : {
-            state: "moving",
-            method: [
-              "moveTo",
-              [
-                opts.last.value,
-                { visualizePathStyle: defaultVisualizePathStyle },
-              ],
-            ],
-          }
-      : {
-          state: "moving",
-          method: [
-            "moveTo",
-            [
-              opts.creep.room.controller!,
-              { visualizePathStyle: defaultVisualizePathStyle },
-            ],
-          ],
-        },
+        : fu.act(
+            creep.moveTo(value, {
+              visualizePathStyle: defaultVisualizePathStyle,
+            }),
+            () => undefined,
+            (code) => {
+              creep.say(`⚠️ move failed ${code}`);
+              return planActionByRole.idle(opts);
+            },
+          )
+      : fu.act(
+          creep.moveTo(creep.room.controller!),
+          () => undefined,
+          (code) => {
+            creep.say(`⚠️ move failed ${code}`);
+            return planActionByRole.idle(opts);
+          },
+        );
+  },
 };
 
-export const planUpgrade: PlanRoleFn<CreepUpgradeAction> = ({
-  creep,
-  state,
-}) => {
-  const mem = creep.memory.current as UpgraderMemory;
+export const planUpgrade: PlanRoleFn = ({ creep, state }) => {
+  const mem = creep.memory as UpgraderMemory;
 
   const lastTargetStructure: AnyStructure | undefined =
     mem.last?.kind === "targetStructure"
@@ -126,7 +136,7 @@ export const planUpgrade: PlanRoleFn<CreepUpgradeAction> = ({
       : undefined;
 
   return planActionByRole[mem.state]({
-    creep,
+    creep: creep as any,
     state,
     last: lastTargetStructure
       ? {

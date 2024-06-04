@@ -1,6 +1,8 @@
 import { Strategy } from "./strategy.types";
 
 declare global {
+  type CreepActionTag = symbol & { __tag: "CreepActionTag" };
+
   type Dictionary<T> = Record<string, T>;
 
   // Memory extension samples
@@ -46,16 +48,17 @@ declare global {
         };
   };
 
-  interface CreepMemory {
-    plan?: {
-      isOverallocatedRole?: boolean;
-    };
-    current: HarvestorMemory | UpgraderMemory | BuilderMemory;
-  }
+  type CreepRoleMemory = HarvestorMemory | UpgraderMemory | BuilderMemory;
 
-  type CreepRole = CreepMemory["current"]["role"];
+  type CreepRole = CreepRoleMemory["role"];
   type CreepMethod = Values<SignatureByMethodName<Creep>>;
   type CreepsByRole = Partial<Record<CreepRole, Dictionary<Creep>>>;
+
+  type CreepActFn = (
+    code: number,
+    onOk: () => undefined | CreepActionTag | void,
+    onError: (code: number) => undefined | CreepActionTag | void,
+  ) => CreepActionTag;
 
   interface ScreepsFuGlobal {
     // Creep utilities
@@ -69,15 +72,26 @@ declare global {
     STRUCTURE_MAPS: {
       ENERGY_CONSUMING: Set<StructureConstant>;
     };
+    act: CreepActFn;
     actions: {
       creep: {
         merge: <S>(...actions: CreepAction<S>[]) => CreepActionMany<S>;
+        retryOnceElse: <Fn1 extends AnyFn, Fn2 extends AnyFn>(
+          creep: Creep,
+          once: Fn1,
+          elseFn: Fn2,
+        ) => ReturnType<Fn1> | ReturnType<Fn2>;
       };
     };
 
     // ts resources
     nev: (n: never, msg?: string) => any;
     noop: () => void;
+    set: <O extends Record<any, any>, K extends keyof O>(
+      ref: O,
+      key: K,
+      next: O[K],
+    ) => undefined;
   }
 
   var fu: ScreepsFuGlobal;

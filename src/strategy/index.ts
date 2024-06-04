@@ -101,7 +101,7 @@ const getState = ({
     prevState?.collections.creeps.all ??
     room.find(FIND_MY_CREEPS).map((creep) => {
       // create fresh plan, that serializes to nothing, optimizing our mem usage
-      creep.memory.plan = { ["toJSON" as any]: global.fu.noop };
+      // creep.memory.plan = { ["toJSON" as any]: global.fu.noop };
       return creep;
     });
   const state: PlanState = prevState ?? {
@@ -143,12 +143,7 @@ const plan = (room: Room, prevState?: PlanState): PlanState => {
   let state = getState({ room, prevState });
   state = maybeSpawnNextWorkers({ room, state });
 
-  do {
-    state.collections.proposedCreeps.byRole = planActions(state);
-    ++state.iteration;
-  } while (!isPlanSettled(state));
-
-  act(state);
+  planActions(state);
 
   return state;
 };
@@ -169,39 +164,38 @@ const getMaxBeefedUpPartsWeCanAfford = (
   return acceptableParts;
 };
 
-const act = (state: PlanState) => {
-  for (const roleName in state.collections.proposedCreeps.byRole) {
-    const creepsByName =
-      state.collections.creeps.byRole[roleName as CreepRole]!;
-    const actionsByName =
-      state.collections.proposedCreeps.byRole[roleName as CreepRole];
-    for (const creepName in actionsByName) {
-      const creep = creepsByName[creepName]!;
-      const proposedAction = actionsByName[creepName]!;
+// const act = (state: PlanState) => {
+//   for (const roleName in state.collections.proposedCreeps.byRole) {
+//     const creepsByName =
+//       state.collections.creeps.byRole[roleName as CreepRole]!;
+//     const actionsByName =
+//       state.collections.proposedCreeps.byRole[roleName as CreepRole];
+//     for (const creepName in actionsByName) {
+//       const creep = creepsByName[creepName]!;
+//       const proposedAction = actionsByName[creepName]!;
 
-      // naive mode
-      const { state, methods } = global.fu.actions.creep.merge(proposedAction);
-      for (const m of methods) {
-        const [methodName, methodArgs] = m;
-        try {
-          const code = (creep[methodName] as any)(...methodArgs);
-          if (code !== OK) {
-            const codeName = Object.keys(global).find(
-              (key) => key.startsWith("ERR_") && (global as any)[key] === code,
-            );
-            throw new Error(
-              `method ${methodName} failed with code ${codeName} (${code})`,
-            );
-          }
-        } catch (err) {
-          console.log(`@fatal ${err}`);
-          creep.say(`🔥 ${err}`);
-        }
-      }
-    }
-  }
-};
-
+//       // naive mode
+//       const { state, methods } = global.fu.actions.creep.merge(proposedAction);
+//       for (const m of methods) {
+//         const [methodName, methodArgs] = m;
+//         try {
+//           const code = (creep[methodName] as any)(...methodArgs);
+//           if (code !== OK) {
+//             const codeName = Object.keys(global).find(
+//               (key) => key.startsWith("ERR_") && (global as any)[key] === code,
+//             );
+//             throw new Error(
+//               `method ${methodName} failed with code ${codeName} (${code})`,
+//             );
+//           }
+//         } catch (err) {
+//           console.log(`@fatal ${err}`);
+//           creep.say(`🔥 ${err}`);
+//         }
+//       }
+//     }
+//   }
+// };
 
 //   const sink = randomElement(state.collections.sinks.unfilledEnergy);
 //   if (!sink) {
@@ -212,5 +206,3 @@ const act = (state: PlanState) => {
 //     method: ["transfer", [sink, RESOURCE_ENERGY]],
 //   };
 // };
-
-

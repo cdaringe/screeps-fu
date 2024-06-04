@@ -4,10 +4,7 @@
     "enabled": true
   },
   "files": {
-    "ignore": [
-      "dist",
-      "build"
-    ]
+    "ignore": ["dist", "build"]
   },
   "formatter": {
     "enabled": true,
@@ -31,7 +28,8 @@
       "suspicious": {
         "noExplicitAny": "off",
         "noShadowRestrictedNames": "off",
-        "noEmptyInterface": "off"
+        "noEmptyInterface": "off",
+        "noConfusingVoidType": "off"
       }
     }
   }
