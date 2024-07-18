@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.7.3",
-    "@types/lodash": "4.17.4",
+    "@types/lodash": "4.17.7",
     "@types/node": "^20.12.12",
     "@types/screeps": "^3.3.8",
     "esbuild": "0.21.3",
