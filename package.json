@@ -52,6 +52,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "debug": "4.3.4"
+    "debug": "4.3.4",
+    "xstate": "5.13.1"
   }
 }

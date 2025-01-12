@@ -11,6 +11,9 @@ importers:
       debug:
         specifier: 4.3.4
         version: 4.3.4
+      xstate:
+        specifier: 5.13.1
+        version: 5.13.1
     devDependencies:
       '@biomejs/biome':
         specifier: 1.7.3
@@ -625,6 +628,9 @@ packages:
       utf-8-validate:
         optional: true
 
+  xstate@5.13.1:
+    resolution: {integrity: sha512-saBUxsTb29Vq8bjq1TjLdGCYs2pneGMzQ7pqQyXh1nqZaSnKHkCkxf3EV+EDYbLnQioxK9HNMYPQrz4whj3RJQ==}
+
   yamljs@0.3.0:
     resolution: {integrity: sha512-C/FsVVhht4iPQYXOInoxUM/1ELSf9EsgKH34FofQOp6hwCPrW4vG4w5++TED3xRUo8gD7l0P1J1dLlDYzODsTQ==}
     hasBin: true
@@ -1093,6 +1099,8 @@ snapshots:
     optionalDependencies:
       bufferutil: 4.0.8
       utf-8-validate: 5.0.10
+
+  xstate@5.13.1: {}
 
   yamljs@0.3.0:
     dependencies:
